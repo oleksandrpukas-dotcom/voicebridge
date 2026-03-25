@@ -38,7 +38,10 @@ export function startListening(
   recognition.lang = langCode;
   recognition.continuous = true;
   recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
+  recognition.maxAlternatives = 3;
+
+  let buffer = "";
+  let bufferTimer: ReturnType<typeof setTimeout> | null = null;
 
   recognition.onresult = (event: SpeechRecognitionEvent) => {
     let interimTranscript = "";
@@ -47,16 +50,32 @@ export function startListening(
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i];
       if (result.isFinal) {
-        finalTranscript += result[0].transcript;
+        // Pick the highest-confidence alternative
+        let best = result[0];
+        for (let j = 1; j < result.length; j++) {
+          if (result[j].confidence > best.confidence) {
+            best = result[j];
+          }
+        }
+        finalTranscript += best.transcript;
       } else {
         interimTranscript += result[0].transcript;
       }
     }
 
     if (finalTranscript) {
-      onResult(finalTranscript.trim(), true);
+      // Buffer consecutive final results to form complete sentences
+      buffer += (buffer ? " " : "") + finalTranscript.trim();
+      if (bufferTimer) clearTimeout(bufferTimer);
+      bufferTimer = setTimeout(() => {
+        if (buffer) {
+          onResult(buffer, true);
+          buffer = "";
+        }
+      }, 1200);
     } else if (interimTranscript) {
-      onResult(interimTranscript.trim(), false);
+      const display = buffer ? buffer + " " + interimTranscript.trim() : interimTranscript.trim();
+      onResult(display, false);
     }
   };
 
