@@ -42,7 +42,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ translated });
   } catch (error) {
-    console.error("Translation error:", error);
-    return NextResponse.json({ error: "Translation failed" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Translation error:", message);
+    return NextResponse.json(
+      { error: "Translation failed", detail: message },
+      { status: 500 }
+    );
   }
 }
