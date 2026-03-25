@@ -128,3 +128,17 @@
     @apply font-sans;
   }
 }
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.h-dvh {
+  height: 100dvh;
+}
+
+@supports not (height: 100dvh) {
+  .h-dvh {
+    height: 100vh;
+  }
+}
