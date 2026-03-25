@@ -56,18 +56,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    const minutesUsed = Math.ceil(secondsUsed / 60);
-    let remaining = profile.minutes_remaining;
-    let purchased = profile.purchased_minutes;
+    // minutes_remaining is stored as minutes in DB, convert to seconds for precise tracking
+    const remainingSeconds = profile.minutes_remaining * 60;
+    const purchasedSeconds = profile.purchased_minutes * 60;
 
-    // Deduct from monthly minutes first, then purchased
-    if (remaining >= minutesUsed) {
-      remaining -= minutesUsed;
+    let remSec = remainingSeconds;
+    let purSec = purchasedSeconds;
+
+    if (remSec >= secondsUsed) {
+      remSec -= secondsUsed;
     } else {
-      const overflow = minutesUsed - remaining;
-      remaining = 0;
-      purchased = Math.max(0, purchased - overflow);
+      const overflow = secondsUsed - remSec;
+      remSec = 0;
+      purSec = Math.max(0, purSec - overflow);
     }
+
+    // Convert back to minutes for storage (keep fractional precision)
+    const remaining = Math.floor(remSec / 60);
+    const purchased = Math.floor(purSec / 60);
 
     await supabase
       .from("profiles")
