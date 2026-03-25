@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { startListening, stopListening, speak } from "@/lib/speech";
+import { startListening, stopListening, pauseListening, resumeListening, speak } from "@/lib/speech";
 import { getLanguage } from "@/lib/languages";
 import type { TranslationEntry, Tier, TranslationModel } from "@/lib/types";
 
@@ -83,6 +83,7 @@ export function useTranslator({ fromLang, toLang, tier, autoSpeak, model }: UseT
 
         if (autoSpeak && translated && toLanguage) {
           setIsSpeaking(true);
+          pauseListening();
           try {
             if (tier === "premium") {
               const audioRes = await fetch("/api/tts", {
@@ -110,6 +111,7 @@ export function useTranslator({ fromLang, toLang, tier, autoSpeak, model }: UseT
             // TTS failed silently
           } finally {
             setIsSpeaking(false);
+            resumeListening();
           }
         }
       }

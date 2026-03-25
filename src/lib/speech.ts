@@ -11,6 +11,10 @@ interface SpeechRecognitionErrorEvent {
 }
 
 let recognition: SpeechRecognition | null = null;
+let isPaused = false;
+let savedLang = "";
+let savedOnResult: SpeechCallback | null = null;
+let savedOnError: ErrorCallback | null = null;
 
 export function isSpeechRecognitionSupported(): boolean {
   if (typeof window === "undefined") return false;
@@ -95,10 +99,36 @@ export function startListening(
     }
   };
 
+  savedLang = langCode;
+  savedOnResult = onResult;
+  savedOnError = onError;
+  isPaused = false;
+
   recognition.start();
 }
 
+export function pauseListening(): void {
+  if (recognition && !isPaused) {
+    isPaused = true;
+    try {
+      recognition.abort();
+    } catch {
+      // Already stopped
+    }
+  }
+}
+
+export function resumeListening(): void {
+  if (isPaused && savedOnResult && savedOnError) {
+    isPaused = false;
+    startListening(savedLang, savedOnResult, savedOnError);
+  }
+}
+
 export function stopListening(): void {
+  isPaused = false;
+  savedOnResult = null;
+  savedOnError = null;
   if (recognition) {
     const ref = recognition;
     recognition = null;
