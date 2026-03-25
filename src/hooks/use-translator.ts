@@ -3,16 +3,17 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { startListening, stopListening, speak } from "@/lib/speech";
 import { getLanguage } from "@/lib/languages";
-import type { TranslationEntry, Tier } from "@/lib/types";
+import type { TranslationEntry, Tier, TranslationModel } from "@/lib/types";
 
 interface UseTranslatorOptions {
   fromLang: string;
   toLang: string;
   tier: Tier;
   autoSpeak: boolean;
+  model: TranslationModel;
 }
 
-export function useTranslator({ fromLang, toLang, tier, autoSpeak }: UseTranslatorOptions) {
+export function useTranslator({ fromLang, toLang, tier, autoSpeak, model }: UseTranslatorOptions) {
   const [isListening, setIsListening] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [entries, setEntries] = useState<TranslationEntry[]>([]);
@@ -62,6 +63,7 @@ export function useTranslator({ fromLang, toLang, tier, autoSpeak }: UseTranslat
             text,
             fromLang: fromLanguage?.name || fromLang,
             toLang: toLanguage?.name || toLang,
+            model,
           }),
         });
 
@@ -118,7 +120,7 @@ export function useTranslator({ fromLang, toLang, tier, autoSpeak }: UseTranslat
       isProcessing.current = false;
       processQueue();
     }
-  }, [tier, fromLang, toLang, fromLanguage, toLanguage, autoSpeak]);
+  }, [tier, fromLang, toLang, fromLanguage, toLanguage, autoSpeak, model]);
 
   const start = useCallback(() => {
     if (!fromLanguage) return;

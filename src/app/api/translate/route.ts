@@ -7,7 +7,7 @@ function getOpenAI() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, fromLang, toLang } = await req.json();
+    const { text, fromLang, toLang, model } = await req.json();
 
     if (!text || !fromLang || !toLang) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -17,8 +17,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Text too long" }, { status: 400 });
     }
 
+    const aiModel = model === "accurate" ? "gpt-4o" : "gpt-4o-mini";
+
     const completion = await getOpenAI().chat.completions.create({
-      model: "gpt-4o-mini",
+      model: aiModel,
       temperature: 0.3,
       max_tokens: 1000,
       messages: [

@@ -5,7 +5,7 @@ import { useState, useCallback, useEffect, Suspense } from "react";
 import { getLanguage, LANGUAGES } from "@/lib/languages";
 import { useTranslator } from "@/hooks/use-translator";
 import { useUsage } from "@/hooks/use-usage";
-import type { ViewMode } from "@/lib/types";
+import type { ViewMode, TranslationModel } from "@/lib/types";
 import { ChatView } from "@/components/chat-view";
 import { TableView } from "@/components/table-view";
 import { SoundWave } from "@/components/sound-wave";
@@ -24,6 +24,8 @@ import {
   VolumeX,
   ArrowRightLeft,
   Crown,
+  Zap,
+  Brain,
 } from "lucide-react";
 
 function TranslatorContent() {
@@ -38,6 +40,7 @@ function TranslatorContent() {
   const [viewMode, setViewMode] = useState<ViewMode>("chat");
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [model, setModel] = useState<TranslationModel>("fast");
 
   const usage = useUsage();
 
@@ -52,7 +55,7 @@ function TranslatorContent() {
     toggle,
     stop,
     clearHistory,
-  } = useTranslator({ fromLang, toLang, tier: usage.tier, autoSpeak });
+  } = useTranslator({ fromLang, toLang, tier: usage.tier, autoSpeak, model });
 
   // Report usage when stopping
   const prevListening = useCallback(() => {
@@ -171,6 +174,35 @@ function TranslatorContent() {
             >
               {autoSpeak ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm">Translation quality</span>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {model === "fast" ? "GPT-4o-mini — fast & cheap" : "GPT-4o — slower but more accurate"}
+              </p>
+            </div>
+            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+              <button
+                onClick={() => setModel("fast")}
+                disabled={usage.tier === "free"}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-40 ${
+                  model === "fast" ? "bg-background shadow-sm" : ""
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" /> Fast
+              </button>
+              <button
+                onClick={() => setModel("accurate")}
+                disabled={usage.tier === "free"}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors disabled:opacity-40 ${
+                  model === "accurate" ? "bg-background shadow-sm" : ""
+                }`}
+              >
+                <Brain className="w-3.5 h-3.5" /> Accurate
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">

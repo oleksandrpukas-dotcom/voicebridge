@@ -1,5 +1,7 @@
 export type Tier = "free" | "basic" | "premium";
 
+export type TranslationModel = "fast" | "accurate";
+
 export type ViewMode = "chat" | "table";
 
 export interface TranslationEntry {
